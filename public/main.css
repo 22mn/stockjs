@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css?family=PT+Serif');
+
+body {
+	font-family: 'PT Serif', serif;
+	background-color: #fcfcfc;
+}
+
+#ulist span {
+	cursor: pointer;
+	font-size: 12px;
+	color: red;
+	padding-left: 10px;
+}
+
+#ulist li {
+	background-color: #f2f2f2;
+	margin-left: 10px;
+	font-size: 16px;
+}
+
+#loader {
+  width: 100%;
+  background-color: #f2ffe6;
+}
+
+#bar {
+  width: 1%;
+  height: 3px;
+  background-color: #73e600;
+}
+
+
+/*site owner*/
+#siteInfo,#siteWish  {
+    font-variant: small-caps;
+    font-size : 13px;
+    font-family: 'PT Serif', serif;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+#siteWish {
+    font-size : 11px;
+}
+
+#info {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    padding: 4px;
+    font-size: 20px;
+    width: 30px;
+    text-align: center;
+    text-decoration: none;
+    margin : 1px;
+    border-radius: 50%;
+    height: 33px;
+    color: #00ffff;
+    opacity: 0.5;
+}

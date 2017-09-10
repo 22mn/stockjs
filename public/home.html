@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<title>stockjs</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
+  	<link rel="stylesheet" href="public/main.css">
+
+</head>
+<body>
+	<div id="loader">
+  		<div id="bar"></div>
+	</div>
+	
+	<div>
+		<canvas id="chart" width="100%" height="540"></canvas>
+	</div>
+	
+	<div class="container">
+	<div class="row">
+	<div class="col-sm-offset-4 col-sm-4 col-sm-offset-4">
+		<div class="input-group">
+    		<input id="symbol" name="symbol" type="text" class="form-control" placeholder="Add symbol" autocomplete="off">
+    		<div class="input-group-btn">
+      			<button id="bttn" class="btn btn-success">Add</button>
+    		</div>
+ 		</div>
+ 	</div>
+ 	</div>
+ 	<ul id="ulist" class="list-inline"></ul>
+ 	</div>
+  <button class="btn btn-default" id="info" >
+      <span class="glyphicon glyphicon-info-sign"></span>
+  </button>
+
+<script>
+	progressBar();
+	
+    var completeChartData={};
+    var lineChart;
+    var color = ["purple","lightblue","red","yellow",'lightgrey',"green","cyan","blue","grey","pink","brown","orange","lightgreen"];
+    var repeat = ["AAPL"];
+
+    $('#info').popover({title: "<span id='siteInfo'>A <a href='https://www.freecodecamp.com/mgjean' target='_blank'>MGJEAN </a>Site.</span>",
+        content: "<span id='siteWish'>API provider<a href='https://docs.quandl.com/' target='_blank'> Quandl</a></span>",html:true,placement:"left"});
+
+
+    $.ajax({
+    	url: '/initial',
+    	type: 'GET',
+    	dataType: 'json',
+    	success:function(data){
+    		var rand = Math.floor(Math.random() * color.length);
+    		var lineData = stockVal(data);
+    		completeChartData.datasets = [chartLine(lineData,color[rand])]
+    		completeChartData.labels = labelDate(data);
+    		return completeChartData;
+    	}
+    	
+    })
+
+
+    function labelDate(data,reverse=true){
+    	var dataColums = data.dataset.data;
+    	var dateList   = [];
+    	dataColums.forEach(function(item){
+    		dateList.push(item[0]);
+    	});
+    	if (reverse){
+    		dateList.reverse();
+    	}
+    	return dateList;
+    }
+
+    function stockVal(data,reverse=true){
+    	var name = data.dataset.dataset_code;      //stock symbol
+    	var dataColums = data.dataset.data;		   //stock data list 
+    	var priceList = [];
+    	dataColums.forEach(function(item){
+    		priceList.push(item[4]);               //fetch close price 
+    	});   	
+    	if (reverse){
+    		priceList.reverse();
+    	}
+    	priceList.unshift(name);         //mount name for label(tooltip)
+    	return priceList;
+    }
+
+    function chartLine(pList,color){            // priceList 
+    	var tooltip = pList.shift();
+    	var dataSet = {
+    		label : tooltip,    // line label tooltip(symbol name)
+    		data : pList,         // pure priceList 
+    		fill : false,
+    		borderColor : color,
+    		pointBackgroundColor : color,
+    		pointRadius : 4,
+    		pointHoverRadius : 6
+    	};
+    	return dataSet;
+    }
+    
+    
+    setTimeout(function(){
+    	
+    	var chart = $("#chart");    	
+    	lineChart = new Chart(chart, {
+  			type: 'line',
+  			data: completeChartData,
+  			options:{
+  				scales:{
+  					yAxes:[{
+  						scaleLabel:{
+  							display:true,
+  							labelString: "Price (USD $)"
+  						}
+  					}]
+  				},
+    			maintainAspectRatio:false,
+    			title:{
+    				display:true,
+           			text:"Stock Market Chart",
+           			fontSize:20,
+           			fontColor:"#999999"
+           		},
+    			legend:{
+        			position:"bottom",
+        			labels:{
+           				boxWidth:20,
+           				fontSize:14
+        				}
+      				}
+    			}
+			});
+			$("#loader").remove();		
+     	},4000);		
+
+    $("#bttn").click(function(){
+     	var value = $("#symbol").val(); 	
+     	if (repeat.indexOf(value) > -1){		
+     		return;
+     	}
+     	else{  	
+     		repeat.push(value);
+     	}
+     	var obj = {"symbol":value};
+     	$("#symbol").val('');
+
+     	$.ajax({
+     		url: '/add/symbols',
+     		type: 'post',
+     		dataType: 'json',
+     		data: obj,
+     		success:function(data){
+     			var rand = Math.floor(Math.random() * color.length);
+    			var lineData = stockVal(data);
+    			lineChart.data.datasets.push(chartLine(lineData,color[rand]));
+    			lineChart.update();
+    			$("#ulist").append("<li>"+value+"<span class='glyphicon glyphicon-trash'></span></li>");
+     		}
+     	}) 	
+    })
+
+    setInterval(function(){
+    	$("#ulist>li").click(function(){
+    		var remove = $(this).text();  		
+    		var index  = repeat.indexOf(remove);
+    		if (index > 0){
+    			$(this).remove();
+    			repeat.splice(index,1);
+    			lineChart.data.datasets.splice(index,1);
+    			lineChart.update();
+    		}
+    	})
+    },3000);
+
+    function progressBar() {
+  		var bar = document.getElementById("bar");   
+  		var width = 1;
+  		var id = setInterval(frame, 15);
+  		function frame() {
+   			if (width >= 100) {
+      			clearInterval(id);
+   			}
+   			else {
+      			width++; 
+      			bar.style.width = width + '%'; 
+    		}
+  		}
+	}
+
+
+</script>
+
+</body>
+</html>
