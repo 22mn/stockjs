@@ -4,6 +4,7 @@ var bodyParser= require("body-parser");
 var app = express();
 var path = process.cwd();
 
+require("dotenv").load();
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use("/public", express.static(path+"/public"));
@@ -15,7 +16,7 @@ app.get("/",function(req,res){
 app.get("/initial",function(req,res){
 	var symbol = "AAPL";
 	url = "https://www.quandl.com/api/v3/datasets/WIKI/"+
-			symbol+".json?limit=30&collapse=weekly&api_key=iqGbS_AtBdZD14knHxYg";
+			symbol+".json?limit=30&collapse=weekly&api_key="+process.env.API_KEY;
 	
 	request(url,function(err,response,body){
 		
@@ -33,7 +34,7 @@ app.get("/initial",function(req,res){
 app.post("/add/symbols",function(req,res){
 	var symbol = req.body.symbol;
 	url = "https://www.quandl.com/api/v3/datasets/WIKI/"+
-			symbol+".json?limit=30&collapse=weekly&api_key=iqGbS_AtBdZD14knHxYg";
+			symbol+".json?limit=30&collapse=weekly&api_key="+process.env.API_KEY;
 	
 	request(url,function(err,response,body){
 		
